@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using GlazeWM.Domain.Containers.Commands;
 using GlazeWM.Domain.Windows;
