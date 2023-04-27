@@ -60,6 +60,8 @@ namespace GlazeWM.Domain.UserConfigs
           ),
         "weather" =>
           JsonSerializer.Deserialize<WeatherComponentConfig>(
+        "media" =>
+          JsonSerializer.Deserialize<MediaComponentConfig>(
             jsonObject.RootElement.ToString(),
             options
           ),

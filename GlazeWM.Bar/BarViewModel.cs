@@ -109,6 +109,7 @@ namespace GlazeWM.Bar
         MemoryPercentComponentConfig rampc => new MemoryPercentComponentViewModel(this, rampc),
         TextFileComponentConfig stc => new TextFileComponentViewModel(this, stc),
         IpcComponentConfig ipc => new IpcComponentViewModel(this, ipc),
+        MediaComponentConfig mcc => new MediaComponentViewModel(this, mcc),
         _ => throw new ArgumentOutOfRangeException(nameof(config)),
       });
     }
