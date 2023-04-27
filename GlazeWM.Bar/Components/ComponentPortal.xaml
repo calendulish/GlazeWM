@@ -43,6 +43,24 @@
             <DataTemplate DataType="{x:Type components:WorkspacesComponentViewModel}">
               <components:WorkspacesComponent Padding="{Binding Padding}" Background="{Binding Background}" />
             </DataTemplate>
+            <DataTemplate DataType="{x:Type components:CpuPercentComponentViewModel}">
+              <components:CpuPercentComponent Padding="{Binding Padding}" Background="{Binding Background}" />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type components:GpuPercentComponentViewModel}">
+              <components:GpuPercentComponent Padding="{Binding Padding}" Background="{Binding Background}" />
+            </DataTemplate>            
+            <DataTemplate DataType="{x:Type components:MemoryPercentComponentViewModel}">
+              <components:MemoryPercentComponent Padding="{Binding Padding}" Background="{Binding Background}" />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type components:TextFileComponentViewModel}">
+              <components:TextFileComponent Padding="{Binding Padding}" Background="{Binding Background}" />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type components:WeatherComponentViewModel}">
+              <components:WeatherComponent Padding="{Binding Padding}" Background="{Binding Background}" />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type components:IpcComponentViewModel}">
+              <components:IpcComponent Padding="{Binding Padding}" Background="{Binding Background}" />
+            </DataTemplate>
           </ContentPresenter.Resources>
         </ContentPresenter>
       </Grid>

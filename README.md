@@ -295,6 +295,184 @@ There are three labels available that can be customized:
   label_charging: "{battery_level}% (charging)"
 ```
 
+### Bar Component: CPU Usage
+
+Displays the current CPU usage.
+
+```yaml
+- type: "cpu"
+  
+  # {0} is substituted by percentage, {1} by current value, {2} by max value 
+  # Example: '{1}/{2} MHz ({0}%)'
+  #          'CPU {0}%'
+  string_format: "CPU {0}%"
+
+  # For formats, see: https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings#standard-format-specifiers.
+  percent_format: "00" # Format for {0}.
+  current_value_format: "0.00" # Format for {1}.
+  max_value_format: "0.00" # Format for {2}.
+  refresh_interval_ms: 500 # How often this counter is refreshed
+  divide_by: 1000 # Convert MHz to GHz (where appropriate).
+  counter: CpuUsage
+
+  # Supported Counters Include:
+  # CpuUsage: Overall CPU Usage across All Cores.
+  # CpuFrequency: Overall CPU Frequency across All Cores.
+  # PackagePower: [Requires Admin] Overall Power used by CPU Package [not guaranteed to work]
+  # CoreTemp: [Requires Admin] Average Core Temperature of CPU Package [not guaranteed to work]
+```
+
+### Bar Component: GPU Usage
+
+This component has high CPU requirement (compared to others); due to no efficient way to pull data from Windows API. Avoid using low refresh intervals.
+
+```yaml
+- type: "gpu"
+  string_format: "GPU {0}%" # {0} is substituted by number format
+  number_format: "00" # See https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings#standard-format-specifiers.
+  refresh_interval_ms: 1000 # How often this counter is refreshed
+  flags: Graphics
+
+  # Supported flags
+  # Multiple flags can be specified by e.g. `flags: Graphics, VideoDecode, VideoEncode, Copy`
+
+  # Graphics: 3D GPU Engine usage. [Probably what you want]
+  # VideoDecode: Load of dedicated video decoding silicon.
+  # VideoEncode: Load of dedicated video encoding silicon, i.e. NVENC/AMD AMF/QuickSync.
+  # LegacyOverlay: Legacy API for overlaying items over other items.
+  # Copy: Load copying data without intervention of CPU e.g. copying framebuffer across screens in multi GPU setup or uploading textures.
+  # Security: Workloads related to cryptography, such as encryption, decryption, and secure video processing.
+  # Vr: Virtual Reality related workloads.
+```
+
+### Bar Component: Memory Usage
+
+Displays the current Memory usage.
+
+```yaml
+- type: "memory"
+  # {0} is substituted by percentage, {1} by current value, {2} by max value 
+  # Example: '{1}/{2} MB ({0}%)'
+  #          '{0}%'
+  string_format: "RAM {1}/{2}GB ({0}%)"
+
+  # For formats, see: https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings#standard-format-specifiers.
+  percent_format: "00" # Format for {0}.
+  current_value_format: "00.00" # Format for {1}.
+  max_value_format: "00.00" # Format for {2}.
+  refresh_interval_ms: 1000 # How often this counter is refreshed
+  divide_by: 1000000000 # Convert to GigaBytes.
+
+  # Supported Counters Include:
+  # PhysicalMemory: Current amount of physical RAM in use; i.e. working set.
+  # CacheBytes: Amount of cached file data in physical RAM.
+  # CommitSize: Retrieves the amount of committed virtual memory (bytes); i.e. which has space reserved on the disk paging file(s).
+  # PagedResidentBytes: Size of the active portion of the paged pool in physical memory, storing objects that can be written to disk when they're not in use.
+  counter: PhysicalMemory
+```
+
+### Bar Component: Text File
+
+For displaying any content without a native integrated widget; updates in real time.
+
+```yaml
+- type: "text file"
+  file_path: "PATH_HERE" # path to file
+```
+
+### Bar Component: Weather
+
+Uses Open-Meteo API, refreshes every hour.
+
+```yaml
+- type: "weather"
+  latitude: 40.6892
+  longitude: 74.0445
+  format: "{0}{1}°C" # {0} icon, {1} temperature.
+  temperature_unit: Celsius # or Fahrenheit
+  temperature_format: "0" # Format of {1}
+  label_sun: "☀️"
+  label_moon: "🌙"
+  label_cloud_moon: "🌙☁️"
+  label_cloud_sun: "⛅"
+  label_cloud_moon_rain: "🌙🌧️"
+  label_cloud_sun_rain: "🌦️"
+  label_cloud_rain: "🌧️"
+  label_snow_flake: "❄️"
+  label_thunderstorm: "⚡"
+  label_cloud: "☁️"
+```
+
+### Adding Custom Bar Components
+
+[Guide Available Here](./README-ADDINGCOMPONENTS.md)
+
+## IPC
+
+GlazeWM includes a component for handling inter-process communication.
+It is based ZeroMQ for message passing and UTF8 JSON for serialization, therefore should be portable across many languages.
+
+[Refer to Client Source for Possible Commands](./GlazeWM.IPC.Client/Client.cs).
+
+By default Port 49999 is used, you can override this in main bar config.
+
+```yaml
+general:
+  net_mq_port: 49999
+```
+
+### Bar Component: IPC Label
+
+This component allows you to update its text and style remotely using interprocess communication:
+
+```yaml
+- type: "ipc"
+  label_id: "uniqueIdForThisLabel"
+  default_text: "placeholder text" # Placeholder
+```
+
+To use this, make a new C# project and add a `Project Reference` to `GlazeWM.IPC.Client`; then use it as follows:
+
+```csharp
+// Connect to IPC
+using var client = new Client(49999);
+
+// Send an update
+client.SendIpcComponentUpdate("uniqueIdForThisLabel", new UpdateIpcComponent()
+{
+  Text = "This label now has cool text"
+});
+```
+
+### Usage from Other Programming Languages
+
+If you are interfacing from another programming language, do equivalent of:
+```csharp
+_publisher = new PublisherSocket();
+_publisher.Connect($"tcp://localhost:{port}");
+```
+
+and simply send update messages.
+
+Check the [Messages](./GlazeWM.IPC.Client/Messages). folder for list of available messages.
+
+Example payload for IPC Label Component:
+```json
+{
+  "Text":"This is a cool label.",
+  "Foreground":"#74FFFF74",
+  "Margin":null,
+  "Background":null,
+  "FontFamily":null,
+  "FontWeight":null,
+  "FontSize":null,
+  "BorderColor":null,
+  "BorderRadius":null,
+  "BorderWidth":null,
+  "Padding":null
+}
+```
+
 ## Window rules
 
 Commands can be run when a window is initially launched. This can be used to assign an app to a specific workspace or to always start an app in floating mode.
